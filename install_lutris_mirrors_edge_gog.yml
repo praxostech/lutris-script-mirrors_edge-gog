@@ -1,0 +1,65 @@
+name: "Mirror's Edge"
+game_slug: mirrors-edge
+version: GOG
+slug: gog-mirrors-edge-installer
+runner: wine
+script:
+  files:
+    - installer: N/A:Select the EXE downloaded from GOG
+
+  game:
+    arch: win64
+    gogid: "1893001152"
+    exe: $GAMEDIR/drive_c/GOG Games/Mirror's Edge/Binaries/MirrorsEdge.exe
+    prefix: $GAMEDIR
+
+  wine:
+    dxvk: true
+    esync: true
+
+  installer:
+    # Drop-down menu for choosing menu and subtitle language
+    - input_menu:
+        description: "Please choose your preferred language."
+        id: Locale
+        options:
+          - hu-HU: Hungarian
+          - fr_FR: French
+          - pt_PT: Portuguese
+          - es_ES: Spanish
+          - ko_KR: Korean
+          - zh_TW: Chinese
+          - it_IT: Italian
+          - ru_RU: Russian
+          - de_DE: German
+          - jp_JP: Japanese
+          - cs: Czech
+          - pl_PL: Polish
+          - en_UK: English
+        preselect: en_UK
+
+    # Create wine prefix
+    - task:
+        arch: win64
+        description: Creating Wine Prefix
+        name: create_prefix
+        install_gecko: false
+        install_mono: false
+        prefix: $GAMEDIR
+
+    # Run GOG-Installer
+    - task:
+        description: Running Game setup, please wait...
+        executable: installer
+        args: /VERYSILENT /SUPPRESSMSGBOXES
+        name: wineexec
+        prefix: $GAMEDIR
+
+    # Set language
+    - task:
+        description: Setting Language...
+        name: set_regedit
+        path: HKEY_LOCAL_MACHINE\Software\Wow6432Node\EA Games\Mirror's Edge
+        key: Locale
+        value: $INPUT_Locale
+        type: REG_SZ
